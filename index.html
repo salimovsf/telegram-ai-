@@ -373,7 +373,7 @@
                        id="apiKeyInput" 
                        class="api-input" 
                        placeholder="Вставьте ваш OpenAI API ключ (sk-...)"
-                       onchange="validateApiKey()">
+                       oninput="validateApiKey()">
                 <button class="test-btn" onclick="testApiConnection()">Проверить подключение</button>
                 <div id="apiStatus" class="api-status"></div>
                 <small style="color: #666;">
@@ -388,10 +388,10 @@
                     Перетащите JSON файл экспорта Telegram сюда<br>
                     или нажмите для выбора файла
                 </div>
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                <button class="upload-btn" onclick="selectFile()">
                     Выбрать файл
                 </button>
-                <input type="file" id="fileInput" class="file-input" accept=".json" onchange="handleFileSelect(event)">
+                <input type="file" id="fileInput" class="file-input" accept=".json">
             </div>
             
             <div class="progress-bar" id="progressBar">
@@ -446,12 +446,64 @@
     </div>
 
     <script>
+        console.log('Script started');
+        
         let processedData = null;
         let chunks = [];
         let embeddings = null;
         let apiKey = '';
         
-        // API Management
+        // Initialize when page loads
+        window.addEventListener('load', function() {
+            console.log('Page loaded, initializing...');
+            
+            // Load saved API key
+            const savedKey = localStorage.getItem('openai_api_key');
+            if (savedKey) {
+                document.getElementById('apiKeyInput').value = savedKey;
+                apiKey = savedKey;
+                validateApiKey();
+            }
+            
+            // Setup file input
+            const fileInput = document.getElementById('fileInput');
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Setup drag and drop
+            setupDragAndDrop();
+            
+            console.log('Initialization complete');
+        });
+        
+        function selectFile() {
+            console.log('Select file clicked');
+            document.getElementById('fileInput').click();
+        }
+        
+        function setupDragAndDrop() {
+            const uploadSection = document.getElementById('uploadSection');
+            
+            uploadSection.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadSection.classList.add('dragover');
+            });
+            
+            uploadSection.addEventListener('dragleave', () => {
+                uploadSection.classList.remove('dragover');
+            });
+            
+            uploadSection.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadSection.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+            
+            uploadSection.addEventListener('click', selectFile);
+        }
+        
         function validateApiKey() {
             const key = document.getElementById('apiKeyInput').value.trim();
             apiKey = key;
@@ -466,10 +518,14 @@
                 status.textContent = '❌ Неверный формат ключа';
                 status.className = 'api-status error';
                 status.style.display = 'block';
+            } else {
+                status.style.display = 'none';
             }
         }
         
         async function testApiConnection() {
+            console.log('Testing API connection...');
+            
             if (!apiKey) {
                 showApiStatus('Сначала введите API ключ', 'error');
                 return;
@@ -488,7 +544,7 @@
                 if (response.ok) {
                     showApiStatus('✅ Подключение успешно!', 'success');
                 } else {
-                    throw new Error('Неверный API ключ');
+                    throw new Error('Неверный API ключ или проблема с доступом');
                 }
             } catch (error) {
                 showApiStatus('❌ Ошибка подключения: ' + error.message, 'error');
@@ -502,43 +558,8 @@
             status.style.display = 'block';
         }
         
-        // Load saved API key
-        window.onload = function() {
-            const savedKey = localStorage.getItem('openai_api_key');
-            if (savedKey) {
-                document.getElementById('apiKeyInput').value = savedKey;
-                apiKey = savedKey;
-                validateApiKey();
-            }
-        };
-        
-        // File handling
-        const uploadSection = document.getElementById('uploadSection');
-        const fileInput = document.getElementById('fileInput');
-        
-        uploadSection.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadSection.classList.add('dragover');
-        });
-        
-        uploadSection.addEventListener('dragleave', () => {
-            uploadSection.classList.remove('dragover');
-        });
-        
-        uploadSection.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadSection.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0]);
-            }
-        });
-        
-        uploadSection.addEventListener('click', () => {
-            fileInput.click();
-        });
-        
         function handleFileSelect(event) {
+            console.log('File selected');
             const file = event.target.files[0];
             if (file) {
                 handleFile(file);
@@ -546,6 +567,8 @@
         }
         
         async function handleFile(file) {
+            console.log('Processing file:', file.name);
+            
             if (!file.name.endsWith('.json')) {
                 showStatus('Пожалуйста, выберите JSON файл', 'error');
                 return;
@@ -579,6 +602,7 @@
         }
         
         async function processData(data) {
+            console.log('Processing data...');
             const messages = data.messages || data;
             const cleanedMessages = [];
             
@@ -610,7 +634,7 @@
             
             showProgress(80);
             
-            // Create simple embeddings (TF-IDF like approach for demo)
+            // Create simple embeddings
             embeddings = createSimpleEmbeddings(chunks);
             
             showProgress(90);
@@ -625,6 +649,8 @@
                 chunks: chunks,
                 embeddings: embeddings
             };
+            
+            console.log('Data processing complete');
         }
         
         function extractText(text) {
@@ -659,7 +685,7 @@
                 
                 if (currentLength + msgLength > chunkSize && currentChunk.length > 0) {
                     chunks.push({
-                        text: currentChunk.map(m => `[${m.author}]: ${m.text}`).join('\\n'),
+                        text: currentChunk.map(m => `[${m.author}]: ${m.text}`).join('\n'),
                         messages: [...currentChunk],
                         startIndex: currentChunk[0].index,
                         endIndex: currentChunk[currentChunk.length - 1].index,
@@ -678,7 +704,7 @@
             
             if (currentChunk.length > 0) {
                 chunks.push({
-                    text: currentChunk.map(m => `[${m.author}]: ${m.text}`).join('\\n'),
+                    text: currentChunk.map(m => `[${m.author}]: ${m.text}`).join('\n'),
                     messages: [...currentChunk],
                     startIndex: currentChunk[0].index,
                     endIndex: currentChunk[currentChunk.length - 1].index,
@@ -690,67 +716,58 @@
         }
         
         function createSimpleEmbeddings(chunks) {
-            // Simple TF-IDF like embeddings for semantic search
-            const vocabulary = new Set();
+            // Simple word frequency embeddings
+            const allWords = new Set();
             const documents = chunks.map(chunk => {
                 const words = chunk.text.toLowerCase()
-                    .replace(/[^а-яё\\w\\s]/gi, ' ')
-                    .split(/\\s+/)
+                    .replace(/[^\u0400-\u04FF\w\s]/g, ' ')
+                    .split(/\s+/)
                     .filter(word => word.length > 2);
-                words.forEach(word => vocabulary.add(word));
+                words.forEach(word => allWords.add(word));
                 return words;
             });
             
-            const vocabArray = Array.from(vocabulary);
-            const embeddings = documents.map(doc => {
-                const vector = new Array(vocabArray.length).fill(0);
+            const vocabulary = Array.from(allWords);
+            return documents.map(doc => {
+                const vector = new Array(vocabulary.length).fill(0);
                 doc.forEach(word => {
-                    const index = vocabArray.indexOf(word);
-                    if (index !== -1) {
-                        vector[index] += 1;
-                    }
+                    const index = vocabulary.indexOf(word);
+                    if (index !== -1) vector[index]++;
                 });
                 return vector;
             });
-            
-            return embeddings;
-        }
-        
-        function cosineSimilarity(vecA, vecB) {
-            const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
-            const magnitudeA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
-            const magnitudeB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
-            return dotProduct / (magnitudeA * magnitudeB) || 0;
         }
         
         function searchRelevantChunks(query, topK = 5) {
-            const queryVector = createQueryEmbedding(query);
-            const similarities = embeddings.map((embedding, index) => ({
-                index,
-                similarity: cosineSimilarity(queryVector, embedding),
-                chunk: chunks[index]
-            }));
-            
-            return similarities
-                .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, topK)
-                .filter(item => item.similarity > 0.1);
-        }
-        
-        function createQueryEmbedding(query) {
-            const words = query.toLowerCase()
-                .replace(/[^а-яё\\w\\s]/gi, ' ')
-                .split(/\\s+/)
+            const queryWords = query.toLowerCase()
+                .replace(/[^\u0400-\u04FF\w\s]/g, ' ')
+                .split(/\s+/)
                 .filter(word => word.length > 2);
             
-            // Simple bag of words representation
-            const vector = new Array(1000).fill(0);
-            words.forEach((word, i) => {
-                const hash = word.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                vector[hash % 1000] += 1;
-            });
+            const results = [];
             
-            return vector;
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+                const chunkText = chunk.text.toLowerCase();
+                
+                let score = 0;
+                queryWords.forEach(word => {
+                    const matches = (chunkText.match(new RegExp(word, 'g')) || []).length;
+                    score += matches;
+                });
+                
+                if (score > 0) {
+                    results.push({
+                        index: i,
+                        chunk: chunk,
+                        score: score
+                    });
+                }
+            }
+            
+            return results
+                .sort((a, b) => b.score - a.score)
+                .slice(0, topK);
         }
         
         async function callOpenAI(messages, temperature = 0.7) {
@@ -773,11 +790,23 @@
             });
             
             if (!response.ok) {
-                throw new Error(`OpenAI API error: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(`OpenAI API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
             }
             
             const data = await response.json();
             return data.choices[0].message.content;
+        }
+        
+        function showSearch() {
+            document.getElementById('searchSection').style.display = 'block';
+            document.getElementById('searchInput').focus();
+        }
+        
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                performAISearch();
+            }
         }
         
         async function performAISearch() {
@@ -804,19 +833,19 @@
                 const relevantChunks = searchRelevantChunks(query, 5);
                 
                 if (relevantChunks.length === 0) {
-                    displaySearchResults([], query);
+                    displayNoResults(query);
                     return;
                 }
                 
                 // 2. Prepare context for GPT
                 const context = relevantChunks.map((item, index) => 
-                    `Фрагмент ${index + 1} (дата: ${item.chunk.earliestDate}):\\n${item.chunk.text.substring(0, 800)}...`
-                ).join('\\n\\n');
+                    `Фрагмент ${index + 1} (дата: ${item.chunk.earliestDate}):\n${item.chunk.text.substring(0, 800)}...`
+                ).join('\n\n');
                 
                 // 3. Call GPT for analysis
                 const systemPrompt = `Ты анализируешь экспорт чата Telegram. Отвечай на русском языке, основываясь только на предоставленном контексте. Будь конкретным и полезным.`;
                 
-                const userPrompt = `Контекст из чата:\\n\\n${context}\\n\\nВопрос пользователя: ${query}\\n\\nДай развернутый ответ на основе этих сообщений:`;
+                const userPrompt = `Контекст из чата:\n\n${context}\n\nВопрос пользователя: ${query}\n\nДай развернутый ответ на основе этих сообщений:`;
                 
                 const aiResponse = await callOpenAI([
                     { role: 'system', content: systemPrompt },
@@ -835,13 +864,18 @@
             }
         }
         
+        function displayNoResults(query) {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = `<div class="result-item">Не найдено релевантных фрагментов по запросу "${query}"</div>`;
+        }
+        
         function displayAISearchResults(aiResponse, relevantChunks, query) {
             const resultsContainer = document.getElementById('searchResults');
             
             let html = `
                 <div class="ai-response">
                     <h4>🤖 ИИ-анализ по запросу "${query}"</h4>
-                    <div>${aiResponse.replace(/\\n/g, '<br>')}</div>
+                    <div>${aiResponse.replace(/\n/g, '<br>')}</div>
                 </div>
                 
                 <h3>📄 Исходные фрагменты (${relevantChunks.length}):</h3>
@@ -849,27 +883,10 @@
             
             relevantChunks.forEach((result, index) => {
                 const chunk = result.chunk;
-                const similarity = (result.similarity * 100).toFixed(1);
                 const preview = chunk.text.substring(0, 400) + (chunk.text.length > 400 ? '...' : '');
                 
                 html += `
                     <div class="result-item">
-                        <div class="result-date">📅 ${chunk.earliestDate} | Релевантность: ${similarity}%</div>
+                        <div class="result-date">📅 ${chunk.earliestDate} | Совпадений: ${result.score}</div>
                         <div class="result-text">${highlightQuery(preview, query)}</div>
                     </div>
-                `;
-            });
-            
-            resultsContainer.innerHTML = html;
-        }
-        
-        function displaySearchResults(results, query) {
-            const resultsContainer = document.getElementById('searchResults');
-            
-            if (results.length === 0) {
-                resultsContainer.innerHTML = '<div class="result-item">Не найдено релевантных фрагментов по запросу "' + query + '"</div>';
-                return;
-            }
-        }
-        
-        function highlightQuery(text, query

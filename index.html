@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Knowledge Base with GPT</title>
+    <title>Telegram AI Knowledge Base</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -34,144 +30,68 @@
             text-align: center;
         }
         
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .content {
+            padding: 30px;
         }
         
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .main-content {
-            padding: 40px;
-        }
-        
-        .api-section {
-            background: #f8f9ff;
-            border-radius: 15px;
-            padding: 25px;
+        .section {
             margin-bottom: 30px;
-            border: 2px solid #667eea;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
         }
         
-        .api-section h3 {
+        .section.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .section h3 {
             color: #667eea;
             margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         
-        .api-input {
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group input {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
-            margin-bottom: 10px;
-            transition: border-color 0.3s ease;
+            border-radius: 8px;
+            font-size: 16px;
         }
         
-        .api-input:focus {
+        .input-group input:focus {
             outline: none;
             border-color: #667eea;
         }
         
-        .api-status {
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            display: none;
-        }
-        
-        .api-status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .api-status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f1b0b7;
-        }
-        
-        .upload-section {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .upload-section:hover {
-            border-color: #764ba2;
-            background: #f8f9ff;
-        }
-        
-        .upload-section.dragover {
-            border-color: #4CAF50;
-            background: #f0fff0;
-        }
-        
-        .upload-icon {
-            font-size: 4rem;
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-        
-        .upload-text {
-            font-size: 1.3rem;
-            color: #666;
-            margin-bottom: 20px;
-        }
-        
-        .file-input {
-            display: none;
-        }
-        
-        .upload-btn, .test-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn {
+            background: #667eea;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 1.1rem;
+            padding: 12px 24px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            font-size: 16px;
             margin: 5px;
         }
         
-        .upload-btn:hover, .test-btn:hover {
-            transform: translateY(-2px);
+        .btn:hover {
+            background: #5a6fd8;
         }
         
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #f0f0f0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 20px 0;
-            display: none;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.3s ease;
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
         
         .status {
-            text-align: center;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
             display: none;
         }
         
@@ -187,174 +107,49 @@
             border: 1px solid #f1b0b7;
         }
         
-        .status.processing {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .controls {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .control-card {
-            background: #f8f9ff;
-            border-radius: 15px;
-            padding: 25px;
+        .file-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
             text-align: center;
-            transition: transform 0.2s ease;
             cursor: pointer;
+            transition: all 0.3s;
         }
         
-        .control-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        .file-area:hover {
+            background: #f8f9ff;
         }
         
-        .control-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .search-section {
-            display: none;
-            margin: 30px 0;
-        }
-        
-        .search-input {
-            width: calc(100% - 120px);
-            padding: 15px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 1.1rem;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-        
-        .search-input:focus {
-            border-color: #667eea;
-        }
-        
-        .search-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 15px 25px;
-            border-radius: 25px;
-            margin-left: 10px;
-            cursor: pointer;
-            font-size: 1.1rem;
-        }
-        
-        .search-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+        .file-area.dragover {
+            border-color: #4CAF50;
+            background: #f0fff0;
         }
         
         .results {
-            margin-top: 30px;
+            margin-top: 20px;
         }
         
         .result-item {
-            background: white;
+            background: #f8f9ff;
             border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .result-date {
-            color: #666;
-            font-size: 0.9rem;
+            border-radius: 8px;
+            padding: 15px;
             margin-bottom: 10px;
-        }
-        
-        .result-text {
-            line-height: 1.6;
         }
         
         .ai-response {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-        
-        .ai-response h4 {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .stats {
-            display: none;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            border-radius: 10px;
             padding: 20px;
-            border-radius: 15px;
-            text-align: center;
+            margin-bottom: 15px;
         }
         
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+        .hidden { display: none; }
         
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 768px) {
-            .controls {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
-            
-            .search-input {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-            
-            .search-btn {
-                width: 100%;
-                margin-left: 0;
-            }
+        mark {
+            background: yellow;
+            padding: 2px;
         }
     </style>
 </head>
@@ -362,176 +157,110 @@
     <div class="container">
         <div class="header">
             <h1>🤖 Telegram AI Knowledge Base</h1>
-            <p>RAG-система с GPT интеграцией для анализа ваших чатов</p>
+            <p>RAG-система для анализа чатов с помощью GPT</p>
         </div>
         
-        <div class="main-content">
-            <!-- API Configuration -->
-            <div class="api-section">
-                <h3>🔑 Конфигурация OpenAI API</h3>
-                <input type="password" 
-                       id="apiKeyInput" 
-                       class="api-input" 
-                       placeholder="Вставьте ваш OpenAI API ключ (sk-...)"
-                       oninput="validateApiKey()">
-                <button class="test-btn" onclick="testApiConnection()">Проверить подключение</button>
-                <div id="apiStatus" class="api-status"></div>
-                <small style="color: #666;">
-                    Ключ хранится только в браузере и не отправляется никуда, кроме OpenAI
-                </small>
+        <div class="content">
+            <!-- API Section -->
+            <div class="section" id="apiSection">
+                <h3>🔑 1. Настройка OpenAI API</h3>
+                <div class="input-group">
+                    <input type="password" id="apiKey" placeholder="Вставьте OpenAI API ключ (sk-...)">
+                </div>
+                <button class="btn" id="testBtn">Проверить подключение</button>
+                <div class="status" id="apiStatus"></div>
             </div>
             
-            <!-- Upload Section -->
-            <div class="upload-section" id="uploadSection">
-                <div class="upload-icon">📁</div>
-                <div class="upload-text">
-                    Перетащите JSON файл экспорта Telegram сюда<br>
-                    или нажмите для выбора файла
+            <!-- File Section -->
+            <div class="section" id="fileSection">
+                <h3>📁 2. Загрузка JSON файла</h3>
+                <div class="file-area" id="fileArea">
+                    <div style="font-size: 3em; margin-bottom: 10px;">📄</div>
+                    <p>Перетащите JSON файл сюда или кликните для выбора</p>
+                    <button class="btn">Выбрать файл</button>
                 </div>
-                <button class="upload-btn" onclick="selectFile()">
-                    Выбрать файл
-                </button>
-                <input type="file" id="fileInput" class="file-input" accept=".json">
-            </div>
-            
-            <div class="progress-bar" id="progressBar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            
-            <div class="status" id="status"></div>
-            
-            <!-- Stats -->
-            <div class="stats" id="stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="messageCount">0</div>
-                    <div class="stat-label">Сообщений</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="chunkCount">0</div>
-                    <div class="stat-label">Блоков</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="topicCount">0</div>
-                    <div class="stat-label">Тем найдено</div>
-                </div>
-            </div>
-            
-            <!-- Controls -->
-            <div class="controls" id="controls">
-                <div class="control-card" onclick="showSearch()">
-                    <h3>🔍 Умный поиск</h3>
-                    <p>Задать вопрос с ИИ-анализом</p>
-                </div>
-                <div class="control-card" onclick="generateGuide()">
-                    <h3>📖 ИИ-гайд</h3>
-                    <p>Создать структурированный анализ</p>
-                </div>
+                <input type="file" id="fileInput" accept=".json" style="display: none;">
+                <div class="status" id="fileStatus"></div>
             </div>
             
             <!-- Search Section -->
-            <div class="search-section" id="searchSection">
-                <div style="display: flex; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
-                    <input type="text" 
-                           id="searchInput" 
-                           class="search-input" 
-                           placeholder="Задайте любой вопрос о ваших чатах..." 
-                           onkeypress="handleSearchKeyPress(event)">
-                    <button class="search-btn" id="searchBtn" onclick="performAISearch()">
-                        Спросить ИИ
-                    </button>
+            <div class="section hidden" id="searchSection">
+                <h3>🔍 3. Поиск и анализ</h3>
+                <div class="input-group">
+                    <input type="text" id="searchInput" placeholder="Задайте вопрос о вашем чате...">
                 </div>
-                <div id="searchResults" class="results"></div>
+                <button class="btn" id="searchBtn">Спросить ИИ</button>
+                <button class="btn" id="guideBtn">Создать гайд</button>
+                <div class="results" id="results"></div>
             </div>
         </div>
     </div>
 
     <script>
-        console.log('Script started');
-        
-        let processedData = null;
-        let chunks = [];
-        let embeddings = null;
+        // Global variables
         let apiKey = '';
+        let chatData = null;
+        let chunks = [];
         
-        // Initialize when page loads
-        window.addEventListener('load', function() {
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, initializing...');
-            
-            // Load saved API key
-            const savedKey = localStorage.getItem('openai_api_key');
-            if (savedKey) {
-                document.getElementById('apiKeyInput').value = savedKey;
-                apiKey = savedKey;
-                validateApiKey();
-            }
-            
-            // Setup file input
-            const fileInput = document.getElementById('fileInput');
-            fileInput.addEventListener('change', handleFileSelect);
-            
-            // Setup drag and drop
-            setupDragAndDrop();
-            
-            console.log('Initialization complete');
+            setupEventListeners();
+            loadSavedApiKey();
         });
         
-        function selectFile() {
-            console.log('Select file clicked');
-            document.getElementById('fileInput').click();
+        function setupEventListeners() {
+            // API key input
+            document.getElementById('apiKey').addEventListener('input', handleApiKeyInput);
+            document.getElementById('testBtn').addEventListener('click', testConnection);
+            
+            // File handling
+            document.getElementById('fileArea').addEventListener('click', () => {
+                document.getElementById('fileInput').click();
+            });
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+            
+            // Drag and drop
+            const fileArea = document.getElementById('fileArea');
+            fileArea.addEventListener('dragover', handleDragOver);
+            fileArea.addEventListener('dragleave', handleDragLeave);
+            fileArea.addEventListener('drop', handleDrop);
+            
+            // Search
+            document.getElementById('searchBtn').addEventListener('click', performSearch);
+            document.getElementById('guideBtn').addEventListener('click', generateGuide);
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') performSearch();
+            });
         }
         
-        function setupDragAndDrop() {
-            const uploadSection = document.getElementById('uploadSection');
-            
-            uploadSection.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadSection.classList.add('dragover');
-            });
-            
-            uploadSection.addEventListener('dragleave', () => {
-                uploadSection.classList.remove('dragover');
-            });
-            
-            uploadSection.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadSection.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleFile(files[0]);
-                }
-            });
-            
-            uploadSection.addEventListener('click', selectFile);
-        }
-        
-        function validateApiKey() {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            apiKey = key;
-            
-            const status = document.getElementById('apiStatus');
-            if (key.startsWith('sk-') && key.length > 20) {
-                status.textContent = '✅ Формат ключа корректный';
-                status.className = 'api-status success';
-                status.style.display = 'block';
-                localStorage.setItem('openai_api_key', key);
-            } else if (key) {
-                status.textContent = '❌ Неверный формат ключа';
-                status.className = 'api-status error';
-                status.style.display = 'block';
-            } else {
-                status.style.display = 'none';
+        function loadSavedApiKey() {
+            const saved = localStorage.getItem('openai_api_key');
+            if (saved) {
+                document.getElementById('apiKey').value = saved;
+                apiKey = saved;
+                showStatus('apiStatus', 'Сохраненный ключ загружен', 'success');
             }
         }
         
-        async function testApiConnection() {
-            console.log('Testing API connection...');
-            
+        function handleApiKeyInput(e) {
+            apiKey = e.target.value.trim();
+            if (apiKey.startsWith('sk-') && apiKey.length > 20) {
+                localStorage.setItem('openai_api_key', apiKey);
+                showStatus('apiStatus', 'Формат ключа корректный', 'success');
+                document.getElementById('apiSection').classList.add('active');
+            } else if (apiKey) {
+                showStatus('apiStatus', 'Неверный формат ключа', 'error');
+            }
+        }
+        
+        async function testConnection() {
             if (!apiKey) {
-                showApiStatus('Сначала введите API ключ', 'error');
+                showStatus('apiStatus', 'Введите API ключ', 'error');
                 return;
             }
             
-            showApiStatus('Проверяем подключение...', 'success');
+            showStatus('apiStatus', 'Проверяем подключение...', 'success');
             
             try {
                 const response = await fetch('https://api.openai.com/v1/models', {
@@ -542,121 +271,80 @@
                 });
                 
                 if (response.ok) {
-                    showApiStatus('✅ Подключение успешно!', 'success');
+                    showStatus('apiStatus', '✅ Подключение успешно!', 'success');
                 } else {
-                    throw new Error('Неверный API ключ или проблема с доступом');
+                    throw new Error('Неверный ключ или нет доступа');
                 }
             } catch (error) {
-                showApiStatus('❌ Ошибка подключения: ' + error.message, 'error');
+                showStatus('apiStatus', '❌ Ошибка: ' + error.message, 'error');
             }
         }
         
-        function showApiStatus(message, type) {
-            const status = document.getElementById('apiStatus');
-            status.textContent = message;
-            status.className = 'api-status ' + type;
-            status.style.display = 'block';
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('fileArea').classList.add('dragover');
         }
         
-        function handleFileSelect(event) {
-            console.log('File selected');
-            const file = event.target.files[0];
-            if (file) {
-                handleFile(file);
+        function handleDragLeave(e) {
+            document.getElementById('fileArea').classList.remove('dragover');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('fileArea').classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) processFile(files[0]);
+        }
+        
+        function handleFileSelect(e) {
+            if (e.target.files.length > 0) {
+                processFile(e.target.files[0]);
             }
         }
         
-        async function handleFile(file) {
-            console.log('Processing file:', file.name);
-            
+        async function processFile(file) {
             if (!file.name.endsWith('.json')) {
-                showStatus('Пожалуйста, выберите JSON файл', 'error');
+                showStatus('fileStatus', 'Выберите JSON файл', 'error');
                 return;
             }
             
-            if (file.size > 100 * 1024 * 1024) { // 100MB limit
-                showStatus('Файл слишком большой. Максимум 100MB', 'error');
-                return;
-            }
-            
-            showStatus('Обработка файла...', 'processing');
-            showProgress(0);
+            showStatus('fileStatus', 'Обрабатываем файл...', 'success');
             
             try {
                 const text = await file.text();
                 const data = JSON.parse(text);
                 
-                showProgress(25);
-                await processData(data);
+                // Extract messages
+                const messages = data.messages || data;
+                const cleanMessages = [];
                 
-                showProgress(100);
-                showStatus('✅ Файл успешно обработан! RAG-система готова к работе.', 'success');
+                for (let msg of messages) {
+                    const text = extractText(msg.text);
+                    if (text && text.length > 10) {
+                        cleanMessages.push({
+                            date: msg.date || '',
+                            author: msg.from || msg.from_id || 'Unknown',
+                            text: text
+                        });
+                    }
+                }
                 
-                document.getElementById('controls').style.display = 'grid';
-                document.getElementById('stats').style.display = 'grid';
+                // Create chunks
+                chunks = createChunks(cleanMessages);
+                chatData = { messages: cleanMessages, chunks: chunks };
+                
+                showStatus('fileStatus', `✅ Обработано: ${cleanMessages.length} сообщений, ${chunks.length} блоков`, 'success');
+                document.getElementById('fileSection').classList.add('active');
+                document.getElementById('searchSection').classList.remove('hidden');
                 
             } catch (error) {
-                console.error('Error processing file:', error);
-                showStatus('Ошибка обработки файла: ' + error.message, 'error');
+                showStatus('fileStatus', '❌ Ошибка: ' + error.message, 'error');
             }
-        }
-        
-        async function processData(data) {
-            console.log('Processing data...');
-            const messages = data.messages || data;
-            const cleanedMessages = [];
-            
-            showProgress(30);
-            
-            // Clean messages
-            for (let i = 0; i < messages.length; i++) {
-                const msg = messages[i];
-                const text = extractText(msg.text);
-                
-                if (text && text.length > 10 && !isOnlyEmoji(text)) {
-                    cleanedMessages.push({
-                        date: msg.date || '',
-                        author: msg.from || msg.from_id || '',
-                        text: text
-                    });
-                }
-                
-                if (i % 1000 === 0) {
-                    showProgress(30 + (i / messages.length) * 30);
-                    await sleep(1);
-                }
-            }
-            
-            showProgress(60);
-            
-            // Create chunks
-            chunks = createChunks(cleanedMessages);
-            
-            showProgress(80);
-            
-            // Create simple embeddings
-            embeddings = createSimpleEmbeddings(chunks);
-            
-            showProgress(90);
-            
-            // Update stats
-            document.getElementById('messageCount').textContent = cleanedMessages.length.toLocaleString();
-            document.getElementById('chunkCount').textContent = chunks.length.toLocaleString();
-            document.getElementById('topicCount').textContent = Math.min(10, Math.ceil(chunks.length / 10));
-            
-            processedData = {
-                messages: cleanedMessages,
-                chunks: chunks,
-                embeddings: embeddings
-            };
-            
-            console.log('Data processing complete');
         }
         
         function extractText(text) {
-            if (typeof text === 'string') {
-                return text.trim();
-            } else if (Array.isArray(text)) {
+            if (typeof text === 'string') return text.trim();
+            if (Array.isArray(text)) {
                 return text.map(item => {
                     if (typeof item === 'string') return item;
                     if (item && item.text) return item.text;
@@ -666,115 +354,68 @@
             return String(text || '').trim();
         }
         
-        function isOnlyEmoji(text) {
-            const emojiRegex = /^[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]+$/u;
-            return emojiRegex.test(text) || ['👍', '🙏', '❤️', '😂', '👌'].includes(text);
-        }
-        
         function createChunks(messages) {
             const chunks = [];
-            const chunkSize = 1000;
-            const overlap = 100;
-            
+            const chunkSize = 800; // characters
             let currentChunk = [];
             let currentLength = 0;
             
-            for (let i = 0; i < messages.length; i++) {
-                const msg = messages[i];
-                const msgLength = msg.text.length;
+            for (let msg of messages) {
+                const msgText = `[${msg.author}]: ${msg.text}`;
                 
-                if (currentLength + msgLength > chunkSize && currentChunk.length > 0) {
+                if (currentLength + msgText.length > chunkSize && currentChunk.length > 0) {
                     chunks.push({
-                        text: currentChunk.map(m => `[${m.author}]: ${m.text}`).join('\n'),
+                        text: currentChunk.join('\n'),
                         messages: [...currentChunk],
-                        startIndex: currentChunk[0].index,
-                        endIndex: currentChunk[currentChunk.length - 1].index,
-                        earliestDate: currentChunk[0].date
+                        date: currentChunk[0].split(']:')[0].replace('[', '')
                     });
-                    
-                    const overlapSize = Math.min(overlap, currentChunk.length);
-                    currentChunk = currentChunk.slice(-overlapSize);
-                    currentLength = currentChunk.reduce((sum, m) => sum + m.text.length, 0);
+                    currentChunk = [];
+                    currentLength = 0;
                 }
                 
-                msg.index = i;
-                currentChunk.push(msg);
-                currentLength += msgLength;
+                currentChunk.push(msgText);
+                currentLength += msgText.length;
             }
             
             if (currentChunk.length > 0) {
                 chunks.push({
-                    text: currentChunk.map(m => `[${m.author}]: ${m.text}`).join('\n'),
+                    text: currentChunk.join('\n'),
                     messages: [...currentChunk],
-                    startIndex: currentChunk[0].index,
-                    endIndex: currentChunk[currentChunk.length - 1].index,
-                    earliestDate: currentChunk[0].date
+                    date: currentChunk[0].split(']:')[0].replace('[', '')
                 });
             }
             
             return chunks;
         }
         
-        function createSimpleEmbeddings(chunks) {
-            // Simple word frequency embeddings
-            const allWords = new Set();
-            const documents = chunks.map(chunk => {
-                const words = chunk.text.toLowerCase()
-                    .replace(/[^\u0400-\u04FF\w\s]/g, ' ')
-                    .split(/\s+/)
-                    .filter(word => word.length > 2);
-                words.forEach(word => allWords.add(word));
-                return words;
-            });
-            
-            const vocabulary = Array.from(allWords);
-            return documents.map(doc => {
-                const vector = new Array(vocabulary.length).fill(0);
-                doc.forEach(word => {
-                    const index = vocabulary.indexOf(word);
-                    if (index !== -1) vector[index]++;
-                });
-                return vector;
-            });
-        }
-        
-        function searchRelevantChunks(query, topK = 5) {
-            const queryWords = query.toLowerCase()
-                .replace(/[^\u0400-\u04FF\w\s]/g, ' ')
-                .split(/\s+/)
-                .filter(word => word.length > 2);
-            
+        function searchChunks(query, limit = 5) {
+            const queryLower = query.toLowerCase();
             const results = [];
             
             for (let i = 0; i < chunks.length; i++) {
                 const chunk = chunks[i];
-                const chunkText = chunk.text.toLowerCase();
+                const text = chunk.text.toLowerCase();
                 
+                // Simple keyword matching
+                const queryWords = queryLower.split(/\s+/);
                 let score = 0;
-                queryWords.forEach(word => {
-                    const matches = (chunkText.match(new RegExp(word, 'g')) || []).length;
-                    score += matches;
-                });
+                
+                for (let word of queryWords) {
+                    if (word.length > 2) {
+                        const matches = (text.match(new RegExp(word, 'g')) || []).length;
+                        score += matches;
+                    }
+                }
                 
                 if (score > 0) {
-                    results.push({
-                        index: i,
-                        chunk: chunk,
-                        score: score
-                    });
+                    results.push({ chunk, score, index: i });
                 }
             }
             
-            return results
-                .sort((a, b) => b.score - a.score)
-                .slice(0, topK);
+            return results.sort((a, b) => b.score - a.score).slice(0, limit);
         }
         
-        async function callOpenAI(messages, temperature = 0.7) {
-            if (!apiKey) {
-                throw new Error('API ключ не настроен');
-            }
-            
+        async function callGPT(messages) {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -784,109 +425,135 @@
                 body: JSON.stringify({
                     model: 'gpt-3.5-turbo',
                     messages: messages,
-                    temperature: temperature,
-                    max_tokens: 1000
+                    max_tokens: 1000,
+                    temperature: 0.7
                 })
             });
             
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`OpenAI API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+                const error = await response.json();
+                throw new Error(error.error?.message || 'API Error');
             }
             
             const data = await response.json();
             return data.choices[0].message.content;
         }
         
-        function showSearch() {
-            document.getElementById('searchSection').style.display = 'block';
-            document.getElementById('searchInput').focus();
-        }
-        
-        function handleSearchKeyPress(event) {
-            if (event.key === 'Enter') {
-                performAISearch();
-            }
-        }
-        
-        async function performAISearch() {
+        async function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
-            
-            if (!processedData) {
-                showStatus('Сначала загрузите и обработайте файл', 'error');
+            if (!query || !chatData || !apiKey) {
+                alert('Введите вопрос, загрузите файл и настройте API');
                 return;
             }
             
-            if (!apiKey) {
-                showStatus('Настройте OpenAI API ключ', 'error');
-                return;
-            }
-            
-            const searchBtn = document.getElementById('searchBtn');
-            const originalText = searchBtn.textContent;
-            searchBtn.innerHTML = '<span class="loading"></span> Анализирую...';
-            searchBtn.disabled = true;
+            const btn = document.getElementById('searchBtn');
+            btn.textContent = 'Анализирую...';
+            btn.disabled = true;
             
             try {
-                // 1. Retrieve relevant chunks
-                const relevantChunks = searchRelevantChunks(query, 5);
+                // Find relevant chunks
+                const relevant = searchChunks(query);
                 
-                if (relevantChunks.length === 0) {
-                    displayNoResults(query);
+                if (relevant.length === 0) {
+                    showResults('Не найдено релевантной информации');
                     return;
                 }
                 
-                // 2. Prepare context for GPT
-                const context = relevantChunks.map((item, index) => 
-                    `Фрагмент ${index + 1} (дата: ${item.chunk.earliestDate}):\n${item.chunk.text.substring(0, 800)}...`
-                ).join('\n\n');
+                // Prepare context
+                const context = relevant.map(r => r.chunk.text.substring(0, 600)).join('\n\n');
                 
-                // 3. Call GPT for analysis
-                const systemPrompt = `Ты анализируешь экспорт чата Telegram. Отвечай на русском языке, основываясь только на предоставленном контексте. Будь конкретным и полезным.`;
-                
-                const userPrompt = `Контекст из чата:\n\n${context}\n\nВопрос пользователя: ${query}\n\nДай развернутый ответ на основе этих сообщений:`;
-                
-                const aiResponse = await callOpenAI([
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: userPrompt }
+                // Call GPT
+                const gptResponse = await callGPT([
+                    {
+                        role: 'system',
+                        content: 'Ты анализируешь чат Telegram. Отвечай на русском, основываясь на контексте.'
+                    },
+                    {
+                        role: 'user',
+                        content: `Контекст:\n${context}\n\nВопрос: ${query}\n\nОтвет:`
+                    }
                 ]);
                 
-                // 4. Display results
-                displayAISearchResults(aiResponse, relevantChunks, query);
+                showAIResults(gptResponse, relevant, query);
                 
             } catch (error) {
-                console.error('AI search error:', error);
-                showStatus('Ошибка ИИ-анализа: ' + error.message, 'error');
+                showResults('Ошибка: ' + error.message);
             } finally {
-                searchBtn.textContent = originalText;
-                searchBtn.disabled = false;
+                btn.textContent = 'Спросить ИИ';
+                btn.disabled = false;
             }
         }
         
-        function displayNoResults(query) {
-            const resultsContainer = document.getElementById('searchResults');
-            resultsContainer.innerHTML = `<div class="result-item">Не найдено релевантных фрагментов по запросу "${query}"</div>`;
+        async function generateGuide() {
+            if (!chatData || !apiKey) {
+                alert('Загрузите файл и настройте API');
+                return;
+            }
+            
+            const btn = document.getElementById('guideBtn');
+            btn.textContent = 'Создаю гайд...';
+            btn.disabled = true;
+            
+            try {
+                // Take sample chunks
+                const sampleChunks = chunks.slice(0, Math.min(8, chunks.length));
+                const context = sampleChunks.map(c => c.text.substring(0, 400)).join('\n\n');
+                
+                const gptResponse = await callGPT([
+                    {
+                        role: 'system',
+                        content: 'Создай структурированный гайд по чату Telegram на русском языке.'
+                    },
+                    {
+                        role: 'user',
+                        content: `Проанализируй эти фрагменты и создай гайд с основными темами:\n\n${context}`
+                    }
+                ]);
+                
+                showAIResults(gptResponse, [], 'Гайд по чату');
+                
+            } catch (error) {
+                showResults('Ошибка создания гайда: ' + error.message);
+            } finally {
+                btn.textContent = 'Создать гайд';
+                btn.disabled = false;
+            }
         }
         
-        function displayAISearchResults(aiResponse, relevantChunks, query) {
-            const resultsContainer = document.getElementById('searchResults');
-            
+        function showAIResults(aiResponse, chunks, query) {
             let html = `
                 <div class="ai-response">
-                    <h4>🤖 ИИ-анализ по запросу "${query}"</h4>
+                    <h4>🤖 ИИ-ответ на "${query}"</h4>
                     <div>${aiResponse.replace(/\n/g, '<br>')}</div>
                 </div>
-                
-                <h3>📄 Исходные фрагменты (${relevantChunks.length}):</h3>
             `;
             
-            relevantChunks.forEach((result, index) => {
-                const chunk = result.chunk;
-                const preview = chunk.text.substring(0, 400) + (chunk.text.length > 400 ? '...' : '');
-                
-                html += `
-                    <div class="result-item">
-                        <div class="result-date">📅 ${chunk.earliestDate} | Совпадений: ${result.score}</div>
-                        <div class="result-text">${highlightQuery(preview, query)}</div>
-                    </div>
+            if (chunks.length > 0) {
+                html += `<h4>📄 Исходные фрагменты:</h4>`;
+                chunks.forEach(item => {
+                    const preview = item.chunk.text.substring(0, 300);
+                    html += `
+                        <div class="result-item">
+                            <small>Совпадений: ${item.score}</small>
+                            <div>${preview}...</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        function showResults(text) {
+            document.getElementById('results').innerHTML = `<div class="result-item">${text}</div>`;
+        }
+        
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
